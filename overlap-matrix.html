@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overlap Matrix / CCA Calculator</title>
+<style>
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #dbeafe;
+  --border-light: #dee2e6;
+  --border-medium: #ced4da;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Consolas', 'Monaco', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --cca-slight: #22c55e;
+  --cca-moderate: #f59e0b;
+  --cca-high: #f97316;
+  --cca-veryhigh: #ef4444;
+}
+
+/* ── Dark Mode ─────────────────────────────────────────────── */
+body.dark {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  --text-primary: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --text-muted: #718096;
+  --accent: #60a5fa;
+  --accent-hover: #93bbfc;
+  --accent-light: #1e3a5f;
+  --border-light: #2d3748;
+  --border-medium: #4a5568;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* ── Reset / Base ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+.app-header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+.app-header h1 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.app-header__subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.app-header__actions { display: flex; gap: var(--space-2); align-items: center; }
+
+.app-main {
+  max-width: 1200px;
+  margin: var(--space-4) auto;
+  padding: 0 var(--space-3);
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: var(--font-sans);
+}
+.btn:hover { background: var(--bg-tertiary); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn--accent {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn--accent:hover { background: var(--accent-hover); }
+.btn--sm { padding: var(--space-1) var(--space-2); font-size: var(--text-xs); }
+.btn--danger { background: #ef4444; color: #fff; border-color: #ef4444; }
+.btn--danger:hover { background: #dc2626; }
+
+/* ── Tabs (ARIA) ───────────────────────────────────────────── */
+.tab-list {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
+}
+.tab-btn {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn[aria-selected="true"] {
+  background: var(--bg-primary);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+.tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-3);
+}
+.card__header {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+.card__body { padding: var(--space-3) var(--space-4); }
+
+/* ── Forms ─────────────────────────────────────────────────── */
+.form-group { margin-bottom: var(--space-3); }
+.form-group label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+.input, .textarea, .select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+}
+.textarea { min-height: 100px; resize: vertical; font-family: var(--font-mono); }
+.input:focus, .textarea:focus, .select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* ── Tables ────────────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.data-table th, .data-table td {
+  padding: var(--space-2) var(--space-2);
+  border: 1px solid var(--border-light);
+  text-align: center;
+}
+.data-table th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.data-table td.filled {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.data-table td.empty {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+}
+.data-table .ma-name {
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--bg-primary);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+/* ── Matrix container ──────────────────────────────────────── */
+.matrix-scroll {
+  overflow: auto;
+  max-height: 500px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Heatmap cells ─────────────────────────────────────────── */
+.heatmap-cell {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  min-width: 60px;
+}
+
+/* ── CCA Badge ─────────────────────────────────────────────── */
+.cca-badge {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: #fff;
+  margin: var(--space-2) 0;
+}
+.cca-badge--slight { background: var(--cca-slight); }
+.cca-badge--moderate { background: var(--cca-moderate); }
+.cca-badge--high { background: var(--cca-high); }
+.cca-badge--veryhigh { background: var(--cca-veryhigh); }
+
+/* ── Alert ─────────────────────────────────────────────────── */
+.alert {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+  border: 1px solid;
+}
+.alert-info {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.alert-warning {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+body.dark .alert-warning { background: #3b2a08; color: #fbbf24; }
+
+/* ── MA list ───────────────────────────────────────────────── */
+.ma-list { list-style: none; }
+.ma-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+  font-size: var(--text-sm);
+}
+.ma-list li:last-child { border-bottom: none; }
+.ma-list__name { font-weight: 600; min-width: 150px; }
+.ma-list__studies { color: var(--text-secondary); flex: 1; word-break: break-word; }
+.ma-list__actions { display: flex; gap: var(--space-1); flex-shrink: 0; }
+
+/* ── Charts ────────────────────────────────────────────────── */
+.chart-container {
+  width: 100%;
+  overflow-x: auto;
+}
+.chart-container svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Bar chart ─────────────────────────────────────────────── */
+.bar-chart .bar { fill: var(--accent); }
+body.dark .bar-chart .bar { fill: var(--accent); }
+.bar-chart .bar-label { font-size: 11px; fill: var(--text-primary); }
+.bar-chart .axis-label { font-size: 12px; fill: var(--text-secondary); }
+.bar-chart .axis-line { stroke: var(--border-medium); }
+
+/* ── Dendrogram ────────────────────────────────────────────── */
+.dendro-line { stroke: var(--accent); stroke-width: 2; fill: none; }
+.dendro-label { font-size: 12px; fill: var(--text-primary); }
+
+/* ── Report ────────────────────────────────────────────────── */
+.report-section { margin-bottom: var(--space-4); }
+.report-section h3 {
+  font-size: var(--text-base);
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: var(--space-1);
+}
+.report-formula {
+  background: var(--bg-secondary);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  overflow-x: auto;
+  margin: var(--space-2) 0;
+}
+
+/* ── Utilities ─────────────────────────────────────────────── */
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.mt-2 { margin-top: var(--space-2); }
+.mt-3 { margin-top: var(--space-3); }
+.mb-2 { margin-bottom: var(--space-2); }
+.mb-3 { margin-bottom: var(--space-3); }
+.text-center { text-align: center; }
+.text-muted { color: var(--text-muted); }
+.text-sm { font-size: var(--text-sm); }
+.hidden { display: none !important; }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-header { flex-direction: column; gap: var(--space-2); text-align: center; }
+  .tab-btn { font-size: var(--text-xs); padding: var(--space-2); }
+  .card__body { padding: var(--space-2) var(--space-3); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="app-header">
+  <div>
+    <h1>Overlap Matrix / CCA Calculator</h1>
+    <div class="app-header__subtitle">Corrected Covered Area for Umbrella Reviews (Pieper et al. 2014)</div>
+  </div>
+  <div class="app-header__actions">
+    <button class="btn btn--sm" id="darkModeToggle" aria-label="Toggle dark mode">Dark Mode</button>
+    <button class="btn btn--sm" id="clearAllBtn" aria-label="Clear all data">Clear All</button>
+  </div>
+</header>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="app-main">
+
+  <!-- Tab Navigation -->
+  <div class="tab-list" role="tablist" aria-label="Application sections">
+    <button class="tab-btn" role="tab" aria-selected="true" aria-controls="panel-input" id="tab-input" tabindex="0">Data Input</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-matrix" id="tab-matrix" tabindex="-1">Overlap Matrix</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-analysis" id="tab-analysis" tabindex="-1">Analysis</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-report" id="tab-report" tabindex="-1">Report</button>
+  </div>
+
+  <!-- ═══════════════ TAB 1: DATA INPUT ═══════════════ -->
+  <div class="tab-panel active" role="tabpanel" id="panel-input" aria-labelledby="tab-input">
+
+    <!-- Manual entry -->
+    <div class="card">
+      <div class="card__header">Add Meta-Analysis</div>
+      <div class="card__body">
+        <div class="form-group">
+          <label for="maNameInput">Meta-Analysis Name</label>
+          <input type="text" class="input" id="maNameInput" placeholder="e.g., Smith et al. 2020" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="maStudiesInput">Included Studies (comma-separated)</label>
+          <input type="text" class="input" id="maStudiesInput" placeholder="e.g., Jones 2019, Lee 2018, Park 2017" autocomplete="off">
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn--accent" id="addMaBtn">Add Meta-Analysis</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSV paste -->
+    <div class="card">
+      <div class="card__header">CSV Paste Import</div>
+      <div class="card__body">
+        <div class="form-group">
+          <label for="csvPasteArea">Paste CSV (one MA per row: MA_name, study1, study2, ...)</label>
+          <textarea class="textarea" id="csvPasteArea" rows="6" placeholder="Krogh 2017, Blumenthal 2007, Dunn 1999, Mota-Pereira 2011&#10;Kvam 2016, Blumenthal 2007, Hoffman 2011, Singh 2005&#10;..."></textarea>
+        </div>
+        <button class="btn btn--accent" id="importCsvBtn">Import CSV</button>
+      </div>
+    </div>
+
+    <!-- Built-in examples -->
+    <div class="card">
+      <div class="card__header">Built-in Examples</div>
+      <div class="card__body">
+        <div class="flex gap-2 flex-wrap">
+          <button class="btn" id="exampleDepression">Exercise for Depression (6 MAs)</button>
+          <button class="btn" id="exampleStatins">Statins for CVD (5 MAs)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current data -->
+    <div class="card" id="currentDataCard">
+      <div class="card__header">
+        Current Data
+        <span id="dataCountBadge" class="text-muted text-sm" style="margin-left: var(--space-2);"></span>
+      </div>
+      <div class="card__body">
+        <div id="emptyState" class="text-center text-muted" style="padding: var(--space-4);">
+          No meta-analyses added yet. Use the form above or load an example.
+        </div>
+        <ul class="ma-list" id="maList"></ul>
+        <div class="mt-3 flex gap-2" id="computeBtnWrap" style="display:none;">
+          <button class="btn btn--accent" id="computeBtn">Compute Overlap Matrix &amp; CCA</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB 2: OVERLAP MATRIX ═══════════════ -->
+  <div class="tab-panel" role="tabpanel" id="panel-matrix" aria-labelledby="tab-matrix">
+    <div id="matrixEmpty" class="alert alert-info">
+      No data computed yet. Add meta-analyses in the Data Input tab and click "Compute".
+    </div>
+    <div id="matrixContent" class="hidden">
+
+      <!-- CCA result -->
+      <div class="card">
+        <div class="card__header">Corrected Covered Area (CCA)</div>
+        <div class="card__body text-center">
+          <div id="ccaResult"></div>
+        </div>
+      </div>
+
+      <!-- Binary citation matrix -->
+      <div class="card">
+        <div class="card__header">Binary Citation Matrix</div>
+        <div class="card__body">
+          <div class="matrix-scroll" id="citationMatrixWrap"></div>
+        </div>
+      </div>
+
+      <!-- Pairwise overlap heatmap -->
+      <div class="card">
+        <div class="card__header">Pairwise Overlap Heatmap (Jaccard Index)</div>
+        <div class="card__body">
+          <div class="matrix-scroll" id="pairwiseHeatmapWrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB 3: ANALYSIS ═══════════════ -->
+  <div class="tab-panel" role="tabpanel" id="panel-analysis" aria-labelledby="tab-analysis">
+    <div id="analysisEmpty" class="alert alert-info">
+      No data computed yet. Add meta-analyses in the Data Input tab and click "Compute".
+    </div>
+    <div id="analysisContent" class="hidden">
+
+      <!-- Study frequency histogram -->
+      <div class="card">
+        <div class="card__header">Study Frequency Histogram</div>
+        <div class="card__body">
+          <div class="chart-container" id="frequencyChartWrap"></div>
+        </div>
+      </div>
+
+      <!-- Most-included studies -->
+      <div class="card">
+        <div class="card__header">Most-Included Studies</div>
+        <div class="card__body">
+          <div id="mostIncludedWrap"></div>
+        </div>
+      </div>
+
+      <!-- MA similarity dendrogram -->
+      <div class="card">
+        <div class="card__header">Meta-Analysis Similarity Dendrogram (Jaccard Distance)</div>
+        <div class="card__body">
+          <div class="chart-container" id="dendrogramWrap"></div>
+        </div>
+      </div>
+
+      <!-- Independence assessment -->
+      <div class="card">
+        <div class="card__header">Independence Assessment</div>
+        <div class="card__body">
+          <div id="independenceWrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TAB 4: REPORT ═══════════════ -->
+  <div class="tab-panel" role="tabpanel" id="panel-report" aria-labelledby="tab-report">
+    <div id="reportEmpty" class="alert alert-info">
+      No data computed yet. Add meta-analyses in the Data Input tab and click "Compute".
+    </div>
+    <div id="reportContent" class="hidden">
+
+      <div class="card">
+        <div class="card__header">Methods Text</div>
+        <div class="card__body">
+          <div id="methodsTextWrap"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">Pairwise Overlap Table</div>
+        <div class="card__body">
+          <div class="matrix-scroll" id="reportPairwiseWrap"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">Export</div>
+        <div class="card__body">
+          <div class="flex gap-2 flex-wrap">
+            <button class="btn btn--accent" id="exportCsvBtn">Export CSV</button>
+            <button class="btn" id="exportJsonBtn">Export JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Overlap Matrix / CCA Calculator — IIFE
+   ═══════════════════════════════════════════════════════════════ */
+(function() {
+  'use strict';
+
+  /* ── Constants ──────────────────────────────────────────── */
+  var STORAGE_KEY = 'overlap-data';
+
+  /* ── State ──────────────────────────────────────────────── */
+  var state = {
+    metaAnalyses: [],  // [{name: string, studies: string[]}]
+    computed: null      // set after compute
+  };
+
+  /* ── Utility: escapeHtml ────────────────────────────────── */
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  /* ── Utility: csvSafe ───────────────────────────────────── */
+  function csvSafe(val) {
+    var s = String(val);
+    // Guard against formula injection
+    if (/^[=+@\t\r]/.test(s)) {
+      s = "'" + s;
+    }
+    if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+      s = '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  /* ── Utility: normalize study name ──────────────────────── */
+  function normStudy(s) {
+    return s.trim().replace(/\s+/g, ' ');
+  }
+
+  /* ── Utility: parse comma-separated studies ─────────────── */
+  function parseStudies(str) {
+    return str.split(',')
+      .map(function(s) { return normStudy(s); })
+      .filter(function(s) { return s.length > 0; });
+  }
+
+  /* ── LocalStorage ───────────────────────────────────────── */
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.metaAnalyses));
+    } catch(e) { /* quota exceeded — ignore */ }
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          state.metaAnalyses = parsed;
+        }
+      }
+    } catch(e) { /* corrupt — ignore */ }
+  }
+
+  /* ── Dark Mode ──────────────────────────────────────────── */
+  function initDarkMode() {
+    var saved = localStorage.getItem('overlap-dark-mode');
+    if (saved === 'true') {
+      document.body.classList.add('dark');
+    }
+    document.getElementById('darkModeToggle').addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('overlap-dark-mode', document.body.classList.contains('dark'));
+    });
+  }
+
+  /* ── Tab Management (ARIA) ──────────────────────────────── */
+  function initTabs() {
+    var tabs = document.querySelectorAll('[role="tab"]');
+    var panels = document.querySelectorAll('[role="tabpanel"]');
+
+    function selectTab(tab) {
+      tabs.forEach(function(t) {
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+      });
+      panels.forEach(function(p) { p.classList.remove('active'); });
+
+      tab.setAttribute('aria-selected', 'true');
+      tab.setAttribute('tabindex', '0');
+      tab.focus();
+      var panelId = tab.getAttribute('aria-controls');
+      document.getElementById(panelId).classList.add('active');
+    }
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() { selectTab(tab); });
+      tab.addEventListener('keydown', function(e) {
+        var tabArr = Array.prototype.slice.call(tabs);
+        var idx = tabArr.indexOf(tab);
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          selectTab(tabArr[(idx + 1) % tabArr.length]);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          selectTab(tabArr[(idx - 1 + tabArr.length) % tabArr.length]);
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          selectTab(tabArr[0]);
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          selectTab(tabArr[tabArr.length - 1]);
+        }
+      });
+    });
+  }
+
+  /* ── Example Data ───────────────────────────────────────── */
+  var EXAMPLES = {
+    depression: [
+      { name: 'Krogh 2017', studies: ['Blumenthal 2007', 'Dunn 1999', 'Mota-Pereira 2011', 'Trivedi 2011', 'Hoffman 2011'] },
+      { name: 'Kvam 2016', studies: ['Blumenthal 2007', 'Hoffman 2011', 'Singh 2005', 'Dunn 1999', 'Martinsen 1985'] },
+      { name: 'Schuch 2016', studies: ['Blumenthal 2007', 'Dunn 1999', 'Singh 2005', 'Trivedi 2011', 'Hoffman 2011', 'Martinsen 1985', 'Mota-Pereira 2011', 'Pilu 2007'] },
+      { name: 'Cooney 2013', studies: ['Blumenthal 2007', 'Dunn 1999', 'Mota-Pereira 2011', 'Singh 2005', 'Veale 1992'] },
+      { name: 'Josefsson 2014', studies: ['Blumenthal 2007', 'Dunn 1999', 'Hoffman 2011', 'Martinsen 1985', 'Singh 2005', 'Trivedi 2011'] },
+      { name: 'Morres 2019', studies: ['Blumenthal 2007', 'Hoffman 2011', 'Trivedi 2011', 'Pilu 2007', 'Legrand 2016'] }
+    ],
+    statins: [
+      { name: 'Taylor 2013', studies: ['WOSCOPS 1995', 'AFCAPS 1998', 'MEGA 2006', 'JUPITER 2008', 'HOPE-3 2016'] },
+      { name: 'Mihaylova 2012', studies: ['WOSCOPS 1995', 'AFCAPS 1998', 'JUPITER 2008', 'ASCOT 2003', 'CARDS 2004', 'HPS 2002'] },
+      { name: 'Chou 2016', studies: ['WOSCOPS 1995', 'AFCAPS 1998', 'MEGA 2006', 'JUPITER 2008', 'ASCOT 2003'] },
+      { name: 'Tonelli 2011', studies: ['WOSCOPS 1995', 'AFCAPS 1998', 'JUPITER 2008', 'MEGA 2006', 'CARDS 2004'] },
+      { name: 'Ray 2010', studies: ['WOSCOPS 1995', 'AFCAPS 1998', 'MEGA 2006', 'JUPITER 2008', 'ASCOT 2003', 'HPS 2002', 'HOPE-3 2016'] }
+    ]
+  };
+
+  /* ── Render MA list ─────────────────────────────────────── */
+  function renderMaList() {
+    var listEl = document.getElementById('maList');
+    var emptyEl = document.getElementById('emptyState');
+    var badge = document.getElementById('dataCountBadge');
+    var computeWrap = document.getElementById('computeBtnWrap');
+
+    if (state.metaAnalyses.length === 0) {
+      emptyEl.style.display = '';
+      listEl.innerHTML = '';
+      badge.textContent = '';
+      computeWrap.style.display = 'none';
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    computeWrap.style.display = '';
+
+    var allStudies = getAllUniqueStudies();
+    badge.textContent = '(' + state.metaAnalyses.length + ' MAs, ' + allStudies.length + ' unique studies)';
+
+    var html = '';
+    state.metaAnalyses.forEach(function(ma, idx) {
+      html += '<li>'
+        + '<span class="ma-list__name">' + escapeHtml(ma.name) + '</span>'
+        + '<span class="ma-list__studies">' + ma.studies.map(function(s) { return escapeHtml(s); }).join(', ') + '</span>'
+        + '<span class="ma-list__actions">'
+        + '<button class="btn btn--sm btn--danger" data-remove="' + idx + '" aria-label="Remove ' + escapeHtml(ma.name) + '">Remove</button>'
+        + '</span>'
+        + '</li>';
+    });
+    listEl.innerHTML = html;
+
+    // Remove buttons
+    listEl.querySelectorAll('[data-remove]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(this.getAttribute('data-remove'), 10);
+        state.metaAnalyses.splice(idx, 1);
+        state.computed = null;
+        saveState();
+        renderMaList();
+        clearResults();
+      });
+    });
+  }
+
+  /* ── Get all unique studies ─────────────────────────────── */
+  function getAllUniqueStudies() {
+    var set = {};
+    state.metaAnalyses.forEach(function(ma) {
+      ma.studies.forEach(function(s) { set[s] = true; });
+    });
+    return Object.keys(set).sort();
+  }
+
+  /* ── Add MA ─────────────────────────────────────────────── */
+  function addMA(name, studies) {
+    if (!name || studies.length === 0) return;
+    state.metaAnalyses.push({ name: name, studies: studies });
+    state.computed = null;
+    saveState();
+    renderMaList();
+  }
+
+  /* ── Clear results panels ───────────────────────────────── */
+  function clearResults() {
+    document.getElementById('matrixEmpty').classList.remove('hidden');
+    document.getElementById('matrixContent').classList.add('hidden');
+    document.getElementById('analysisEmpty').classList.remove('hidden');
+    document.getElementById('analysisContent').classList.add('hidden');
+    document.getElementById('reportEmpty').classList.remove('hidden');
+    document.getElementById('reportContent').classList.add('hidden');
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     CORE ALGORITHM: CCA + Pairwise Overlap
+     ═══════════════════════════════════════════════════════════ */
+
+  function computeAll() {
+    var mas = state.metaAnalyses;
+    if (mas.length < 2) {
+      alert('Need at least 2 meta-analyses to compute overlap.');
+      return;
+    }
+
+    var studies = getAllUniqueStudies();
+    var r = mas.length;
+    var J = studies.length;
+
+    // Study index map
+    var studyIdx = {};
+    studies.forEach(function(s, i) { studyIdx[s] = i; });
+
+    // Build citation matrix C[i][j] = 1 if MA_i includes study_j
+    var C = [];
+    var sumC = 0;
+    for (var i = 0; i < r; i++) {
+      C[i] = new Array(J).fill(0);
+      mas[i].studies.forEach(function(s) {
+        var j = studyIdx[s];
+        if (j !== undefined) {
+          C[i][j] = 1;
+          sumC++;
+        }
+      });
+    }
+
+    // CCA = (sumC - J) / (r*J - J)
+    var denominator = r * J - J;
+    var cca = denominator > 0 ? (sumC - J) / denominator : 0;
+
+    // CCA interpretation
+    var ccaInterp, ccaClass;
+    if (cca <= 0.05) { ccaInterp = 'Slight (0-5%)'; ccaClass = 'slight'; }
+    else if (cca <= 0.10) { ccaInterp = 'Moderate (6-10%)'; ccaClass = 'moderate'; }
+    else if (cca <= 0.15) { ccaInterp = 'High (11-15%)'; ccaClass = 'high'; }
+    else { ccaInterp = 'Very High (>15%)'; ccaClass = 'veryhigh'; }
+
+    // Study frequency
+    var studyFreq = {};
+    studies.forEach(function(s) { studyFreq[s] = 0; });
+    mas.forEach(function(ma) {
+      ma.studies.forEach(function(s) {
+        if (studyFreq[s] !== undefined) studyFreq[s]++;
+      });
+    });
+
+    // Pairwise overlap (Jaccard)
+    var pairwise = [];
+    for (var a = 0; a < r; a++) {
+      pairwise[a] = [];
+      for (var b = 0; b < r; b++) {
+        if (a === b) {
+          pairwise[a][b] = { shared: mas[a].studies.length, union: mas[a].studies.length, jaccard: 1.0 };
+        } else {
+          var setA = {};
+          mas[a].studies.forEach(function(s) { setA[s] = true; });
+          var shared = 0;
+          mas[b].studies.forEach(function(s) { if (setA[s]) shared++; });
+          var unionSize = mas[a].studies.length + mas[b].studies.length - shared;
+          pairwise[a][b] = {
+            shared: shared,
+            union: unionSize,
+            jaccard: unionSize > 0 ? shared / unionSize : 0
+          };
+        }
+      }
+    }
+
+    // Non-overlapping proportion: studies included in exactly 1 MA / total unique
+    var singleCount = 0;
+    studies.forEach(function(s) { if (studyFreq[s] === 1) singleCount++; });
+    var nonOverlapPct = J > 0 ? (singleCount / J) * 100 : 0;
+
+    state.computed = {
+      studies: studies,
+      C: C,
+      r: r,
+      J: J,
+      sumC: sumC,
+      cca: cca,
+      ccaInterp: ccaInterp,
+      ccaClass: ccaClass,
+      studyFreq: studyFreq,
+      pairwise: pairwise,
+      nonOverlapPct: nonOverlapPct,
+      singleCount: singleCount
+    };
+
+    renderMatrix();
+    renderAnalysis();
+    renderReport();
+
+    // Switch to matrix tab
+    document.getElementById('tab-matrix').click();
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     RENDER: Tab 2 — Overlap Matrix
+     ═══════════════════════════════════════════════════════════ */
+
+  function renderMatrix() {
+    var d = state.computed;
+    if (!d) return;
+
+    document.getElementById('matrixEmpty').classList.add('hidden');
+    document.getElementById('matrixContent').classList.remove('hidden');
+
+    // CCA result
+    var ccaHtml = '<div class="cca-badge cca-badge--' + d.ccaClass + '">'
+      + 'CCA = ' + (d.cca * 100).toFixed(1) + '%'
+      + '</div>'
+      + '<div class="mt-2 text-sm" style="color:var(--text-secondary);">'
+      + 'Interpretation: <strong>' + escapeHtml(d.ccaInterp) + '</strong>'
+      + '</div>'
+      + '<div class="mt-2 text-sm text-muted">'
+      + 'Formula: CCA = (' + d.sumC + ' - ' + d.J + ') / (' + d.r + ' x ' + d.J + ' - ' + d.J + ') = '
+      + (d.sumC - d.J) + ' / ' + (d.r * d.J - d.J)
+      + '</div>';
+    document.getElementById('ccaResult').innerHTML = ccaHtml;
+
+    // Citation matrix table
+    renderCitationMatrix(d);
+
+    // Pairwise heatmap
+    renderPairwiseHeatmap(d);
+  }
+
+  function renderCitationMatrix(d) {
+    var mas = state.metaAnalyses;
+    var html = '<table class="data-table" id="citationMatrix">';
+    html += '<thead><tr><th class="ma-name">Meta-Analysis</th>';
+    d.studies.forEach(function(s) {
+      html += '<th title="' + escapeHtml(s) + '" style="writing-mode:vertical-rl;text-orientation:mixed;max-width:30px;font-size:' + 'var(--text-xs)' + ';">' + escapeHtml(s) + '</th>';
+    });
+    html += '<th>Total</th></tr></thead><tbody>';
+
+    for (var i = 0; i < d.r; i++) {
+      html += '<tr><td class="ma-name">' + escapeHtml(mas[i].name) + '</td>';
+      var rowSum = 0;
+      for (var j = 0; j < d.J; j++) {
+        if (d.C[i][j]) {
+          html += '<td class="filled">1</td>';
+          rowSum++;
+        } else {
+          html += '<td class="empty">0</td>';
+        }
+      }
+      html += '<td style="font-weight:600;">' + rowSum + '</td></tr>';
+    }
+
+    // Footer row with column sums
+    html += '<tr><td class="ma-name" style="font-style:italic;">Frequency</td>';
+    d.studies.forEach(function(s) {
+      html += '<td style="font-weight:600;background:var(--bg-tertiary);">' + d.studyFreq[s] + '</td>';
+    });
+    html += '<td style="font-weight:700;background:var(--bg-tertiary);">' + d.sumC + '</td>';
+    html += '</tr></tbody></table>';
+
+    document.getElementById('citationMatrixWrap').innerHTML = html;
+  }
+
+  function renderPairwiseHeatmap(d) {
+    var mas = state.metaAnalyses;
+    var html = '<table class="data-table" id="pairwiseHeatmap">';
+    html += '<thead><tr><th></th>';
+    mas.forEach(function(ma) {
+      html += '<th style="font-size:var(--text-xs);">' + escapeHtml(ma.name) + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < d.r; i++) {
+      html += '<tr><td class="ma-name">' + escapeHtml(mas[i].name) + '</td>';
+      for (var j = 0; j < d.r; j++) {
+        var pw = d.pairwise[i][j];
+        var jaccard = pw.jaccard;
+        var bgColor = getHeatColor(jaccard);
+        var textColor = jaccard > 0.5 ? '#fff' : 'var(--text-primary)';
+        html += '<td class="heatmap-cell" style="background:' + bgColor + ';color:' + textColor + ';" title="Shared: '
+          + pw.shared + ', Union: ' + pw.union + ', Jaccard: ' + jaccard.toFixed(3) + '">'
+          + pw.shared + ' (' + (jaccard * 100).toFixed(0) + '%)</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+
+    document.getElementById('pairwiseHeatmapWrap').innerHTML = html;
+  }
+
+  function getHeatColor(val) {
+    // 0 = white/light, 1 = deep blue
+    var r = Math.round(255 - val * 200);
+    var g = Math.round(255 - val * 180);
+    var b = Math.round(255 - val * 40);
+    if (document.body.classList.contains('dark')) {
+      r = Math.round(26 + val * 60);
+      g = Math.round(26 + val * 80);
+      b = Math.round(46 + val * 180);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     RENDER: Tab 3 — Analysis
+     ═══════════════════════════════════════════════════════════ */
+
+  function renderAnalysis() {
+    var d = state.computed;
+    if (!d) return;
+
+    document.getElementById('analysisEmpty').classList.add('hidden');
+    document.getElementById('analysisContent').classList.remove('hidden');
+
+    renderFrequencyChart(d);
+    renderMostIncluded(d);
+    renderDendrogram(d);
+    renderIndependence(d);
+  }
+
+  function renderFrequencyChart(d) {
+    var entries = d.studies.map(function(s) {
+      return { name: s, freq: d.studyFreq[s] };
+    }).sort(function(a, b) { return b.freq - a.freq; });
+
+    var barH = 28;
+    var labelW = 180;
+    var chartW = 700;
+    var maxFreq = Math.max.apply(null, entries.map(function(e) { return e.freq; }));
+    var svgH = entries.length * barH + 40;
+    var barAreaW = chartW - labelW - 60;
+
+    var svg = '<svg class="bar-chart" width="' + chartW + '" height="' + svgH + '" xmlns="http://www.w3.org/2000/svg">';
+
+    entries.forEach(function(e, i) {
+      var y = i * barH + 20;
+      var w = maxFreq > 0 ? (e.freq / maxFreq) * barAreaW : 0;
+
+      // Label
+      var truncName = e.name.length > 22 ? e.name.substring(0, 20) + '...' : e.name;
+      svg += '<text x="' + (labelW - 8) + '" y="' + (y + barH / 2 + 4) + '" text-anchor="end" class="bar-label">'
+        + escapeHtml(truncName) + '</text>';
+
+      // Bar
+      svg += '<rect x="' + labelW + '" y="' + (y + 4) + '" width="' + w + '" height="' + (barH - 8) + '" rx="3" class="bar">'
+        + '<title>' + escapeHtml(e.name) + ': included in ' + e.freq + ' MA(s)</title></rect>';
+
+      // Value label
+      svg += '<text x="' + (labelW + w + 6) + '" y="' + (y + barH / 2 + 4) + '" class="bar-label">'
+        + e.freq + '</text>';
+    });
+
+    svg += '</svg>';
+    document.getElementById('frequencyChartWrap').innerHTML = svg;
+  }
+
+  function renderMostIncluded(d) {
+    var sorted = d.studies.map(function(s) {
+      return { name: s, freq: d.studyFreq[s] };
+    }).sort(function(a, b) { return b.freq - a.freq; });
+
+    var html = '<table class="data-table"><thead><tr><th>Rank</th><th style="text-align:left;">Study</th><th>Included in # MAs</th><th>% of MAs</th></tr></thead><tbody>';
+    sorted.forEach(function(e, i) {
+      var pct = (e.freq / d.r * 100).toFixed(1);
+      html += '<tr><td>' + (i + 1) + '</td><td style="text-align:left;">' + escapeHtml(e.name) + '</td><td>' + e.freq + '</td><td>' + pct + '%</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('mostIncludedWrap').innerHTML = html;
+  }
+
+  /* ── Agglomerative clustering (average linkage, Jaccard distance) ── */
+  function renderDendrogram(d) {
+    var mas = state.metaAnalyses;
+    var n = d.r;
+    if (n < 2) {
+      document.getElementById('dendrogramWrap').innerHTML = '<div class="text-muted text-sm">Need at least 2 MAs for dendrogram.</div>';
+      return;
+    }
+
+    // Distance matrix (1 - Jaccard)
+    var dist = [];
+    for (var i = 0; i < n; i++) {
+      dist[i] = [];
+      for (var j = 0; j < n; j++) {
+        dist[i][j] = 1 - d.pairwise[i][j].jaccard;
+      }
+    }
+
+    // Agglomerative clustering (average linkage)
+    var clusters = [];
+    for (var i = 0; i < n; i++) {
+      clusters.push({ id: i, members: [i], height: 0 });
+    }
+    var merges = []; // {left, right, height, members}
+    var active = clusters.map(function(c, i) { return i; });
+
+    while (active.length > 1) {
+      // Find closest pair
+      var minDist = Infinity, minA = -1, minB = -1;
+      for (var ai = 0; ai < active.length; ai++) {
+        for (var bi = ai + 1; bi < active.length; bi++) {
+          var cA = clusters[active[ai]];
+          var cB = clusters[active[bi]];
+          // Average linkage distance
+          var sum = 0, cnt = 0;
+          cA.members.forEach(function(ma) {
+            cB.members.forEach(function(mb) {
+              sum += dist[ma][mb];
+              cnt++;
+            });
+          });
+          var avgDist = sum / cnt;
+          if (avgDist < minDist) {
+            minDist = avgDist;
+            minA = ai;
+            minB = bi;
+          }
+        }
+      }
+
+      var left = clusters[active[minA]];
+      var right = clusters[active[minB]];
+      var merged = {
+        id: clusters.length,
+        members: left.members.concat(right.members),
+        height: minDist,
+        left: left,
+        right: right
+      };
+      clusters.push(merged);
+      merges.push(merged);
+
+      // Remove old, add new
+      var newActive = [];
+      for (var k = 0; k < active.length; k++) {
+        if (k !== minA && k !== minB) newActive.push(active[k]);
+      }
+      newActive.push(merged.id);
+      active = newActive;
+    }
+
+    // Draw dendrogram SVG
+    var root = clusters[active[0]];
+    var leafW = 120;
+    var svgW = Math.max(n * leafW + 60, 400);
+    var svgH = 300;
+    var topMargin = 20;
+    var bottomMargin = 100;
+    var plotH = svgH - topMargin - bottomMargin;
+    var maxHeight = root.height || 1;
+
+    // Get leaf order via in-order traversal
+    var leafOrder = [];
+    function inOrder(node) {
+      if (!node.left && !node.right) {
+        leafOrder.push(node.id);
+      } else {
+        if (node.left) inOrder(node.left);
+        if (node.right) inOrder(node.right);
+      }
+    }
+    inOrder(root);
+
+    var leafX = {};
+    leafOrder.forEach(function(id, i) {
+      leafX[id] = 40 + i * leafW + leafW / 2;
+    });
+
+    function getNodeX(node) {
+      if (!node.left && !node.right) return leafX[node.id];
+      return (getNodeX(node.left) + getNodeX(node.right)) / 2;
+    }
+
+    function heightToY(h) {
+      return topMargin + plotH - (h / maxHeight) * plotH;
+    }
+
+    var paths = '';
+    function drawNode(node) {
+      if (node.left && node.right) {
+        drawNode(node.left);
+        drawNode(node.right);
+
+        var lx = getNodeX(node.left);
+        var rx = getNodeX(node.right);
+        var ly = heightToY(node.left.height);
+        var ry = heightToY(node.right.height);
+        var my = heightToY(node.height);
+
+        // Vertical lines from children up to merge height
+        paths += '<line x1="' + lx + '" y1="' + ly + '" x2="' + lx + '" y2="' + my + '" class="dendro-line"/>';
+        paths += '<line x1="' + rx + '" y1="' + ry + '" x2="' + rx + '" y2="' + my + '" class="dendro-line"/>';
+        // Horizontal connector
+        paths += '<line x1="' + lx + '" y1="' + my + '" x2="' + rx + '" y2="' + my + '" class="dendro-line"/>';
+
+        // Height label
+        paths += '<text x="' + ((lx + rx) / 2) + '" y="' + (my - 4) + '" text-anchor="middle" style="font-size:10px;fill:var(--text-muted);">'
+          + node.height.toFixed(2) + '</text>';
+      }
+    }
+    drawNode(root);
+
+    // Leaf labels
+    var labels = '';
+    leafOrder.forEach(function(id) {
+      var x = leafX[id];
+      var y = heightToY(0) + 14;
+      var name = mas[id].name;
+      var truncName = name.length > 16 ? name.substring(0, 14) + '...' : name;
+      labels += '<text x="' + x + '" y="' + y + '" text-anchor="end" transform="rotate(-45 ' + x + ' ' + y + ')" class="dendro-label" style="font-size:11px;">'
+        + escapeHtml(truncName) + '</text>';
+    });
+
+    // Y-axis
+    var axis = '';
+    for (var t = 0; t <= 4; t++) {
+      var val = (maxHeight * t / 4);
+      var ay = heightToY(val);
+      axis += '<line x1="30" y1="' + ay + '" x2="' + (svgW - 10) + '" y2="' + ay + '" stroke="var(--border-light)" stroke-dasharray="3,3"/>';
+      axis += '<text x="26" y="' + (ay + 4) + '" text-anchor="end" style="font-size:10px;fill:var(--text-muted);">'
+        + val.toFixed(2) + '</text>';
+    }
+
+    var svg = '<svg width="' + svgW + '" height="' + svgH + '" xmlns="http://www.w3.org/2000/svg">'
+      + axis + paths + labels + '</svg>';
+    document.getElementById('dendrogramWrap').innerHTML = svg;
+  }
+
+  function renderIndependence(d) {
+    var html = '<div style="font-size:var(--text-base);">';
+    html += '<p><strong>' + d.nonOverlapPct.toFixed(1) + '%</strong> of primary evidence is non-overlapping '
+      + '(' + d.singleCount + ' of ' + d.J + ' unique studies appear in only 1 meta-analysis).</p>';
+
+    html += '<div class="mt-3">';
+    if (d.cca > 0.10) {
+      html += '<div class="alert alert-warning">'
+        + '<strong>Caution:</strong> CCA = ' + (d.cca * 100).toFixed(1) + '% exceeds 10%. '
+        + 'The included meta-analyses share substantial primary evidence. '
+        + 'Treating their results as independent in an umbrella review may overstate the certainty of conclusions. '
+        + 'Consider reporting overlap-adjusted findings or acknowledging this limitation prominently.'
+        + '</div>';
+    } else if (d.cca > 0.05) {
+      html += '<div class="alert alert-info">'
+        + '<strong>Note:</strong> CCA = ' + (d.cca * 100).toFixed(1) + '% indicates moderate overlap. '
+        + 'Some degree of primary study sharing exists across meta-analyses. '
+        + 'This should be acknowledged when interpreting umbrella review findings.'
+        + '</div>';
+    } else {
+      html += '<div class="alert alert-info">'
+        + '<strong>Low overlap:</strong> CCA = ' + (d.cca * 100).toFixed(1) + '% indicates slight or no overlap. '
+        + 'The meta-analyses draw largely on independent primary evidence.'
+        + '</div>';
+    }
+    html += '</div></div>';
+
+    document.getElementById('independenceWrap').innerHTML = html;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     RENDER: Tab 4 — Report
+     ═══════════════════════════════════════════════════════════ */
+
+  function renderReport() {
+    var d = state.computed;
+    if (!d) return;
+
+    document.getElementById('reportEmpty').classList.add('hidden');
+    document.getElementById('reportContent').classList.remove('hidden');
+
+    renderMethodsText(d);
+    renderReportPairwise(d);
+  }
+
+  function renderMethodsText(d) {
+    var mas = state.metaAnalyses;
+    var html = '<div class="report-section">'
+      + '<h3>Methods</h3>'
+      + '<p style="font-size:var(--text-sm);line-height:1.8;color:var(--text-secondary);">'
+      + 'To assess the degree of overlap in primary studies across the included meta-analyses, '
+      + 'we constructed a citation matrix and calculated the Corrected Covered Area (CCA) '
+      + 'as described by Pieper et al. (2014). The CCA quantifies the overlap of primary studies '
+      + 'across systematic reviews included in an umbrella review, adjusting for the fact that each '
+      + 'study must appear at least once. A CCA of 0-5% is considered slight overlap, 6-10% moderate, '
+      + '11-15% high, and above 15% very high overlap.'
+      + '</p></div>';
+
+    html += '<div class="report-section">'
+      + '<h3>CCA Formula</h3>'
+      + '<div class="report-formula">'
+      + 'CCA = (N - J) / (r * J - J)<br><br>'
+      + 'Where:<br>'
+      + '&nbsp;&nbsp;N = total number of inclusions across all MAs = ' + d.sumC + '<br>'
+      + '&nbsp;&nbsp;J = number of unique primary studies = ' + d.J + '<br>'
+      + '&nbsp;&nbsp;r = number of meta-analyses = ' + d.r + '<br><br>'
+      + 'CCA = (' + d.sumC + ' - ' + d.J + ') / (' + d.r + ' * ' + d.J + ' - ' + d.J + ') = '
+      + (d.sumC - d.J) + ' / ' + (d.r * d.J - d.J) + ' = ' + (d.cca * 100).toFixed(1) + '%'
+      + '</div></div>';
+
+    html += '<div class="report-section">'
+      + '<h3>Results</h3>'
+      + '<p style="font-size:var(--text-sm);line-height:1.8;color:var(--text-secondary);">'
+      + 'The citation matrix included ' + d.r + ' meta-analyses covering ' + d.J + ' unique primary studies '
+      + 'with a total of ' + d.sumC + ' inclusions. '
+      + 'The CCA was ' + (d.cca * 100).toFixed(1) + '%, indicating <strong>' + escapeHtml(d.ccaInterp.toLowerCase()) + '</strong> overlap. '
+      + d.singleCount + ' of ' + d.J + ' studies (' + d.nonOverlapPct.toFixed(1) + '%) appeared in only one meta-analysis.'
+      + '</p></div>';
+
+    html += '<div class="report-section">'
+      + '<h3>Reference</h3>'
+      + '<p style="font-size:var(--text-sm);color:var(--text-secondary);">'
+      + 'Pieper D, Antoine SL, Mathes T, Neugebauer EA, Eikermann M. '
+      + 'Systematic review finds overlapping reviews were not mentioned in every other overview. '
+      + '<em>J Clin Epidemiol</em>. 2014;67(4):368-375. doi:10.1016/j.jclinepi.2013.11.007'
+      + '</p></div>';
+
+    document.getElementById('methodsTextWrap').innerHTML = html;
+  }
+
+  function renderReportPairwise(d) {
+    var mas = state.metaAnalyses;
+    var html = '<table class="data-table"><thead><tr><th>MA 1</th><th>MA 2</th><th>Shared Studies</th><th>Union</th><th>Jaccard Index</th></tr></thead><tbody>';
+
+    for (var i = 0; i < d.r; i++) {
+      for (var j = i + 1; j < d.r; j++) {
+        var pw = d.pairwise[i][j];
+        html += '<tr><td style="text-align:left;">' + escapeHtml(mas[i].name) + '</td>'
+          + '<td style="text-align:left;">' + escapeHtml(mas[j].name) + '</td>'
+          + '<td>' + pw.shared + '</td>'
+          + '<td>' + pw.union + '</td>'
+          + '<td>' + (pw.jaccard * 100).toFixed(1) + '%</td></tr>';
+      }
+    }
+    html += '</tbody></table>';
+
+    document.getElementById('reportPairwiseWrap').innerHTML = html;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     EXPORT
+     ═══════════════════════════════════════════════════════════ */
+
+  function exportCSV() {
+    var d = state.computed;
+    if (!d) return;
+    var mas = state.metaAnalyses;
+
+    var lines = [];
+
+    // Citation matrix
+    lines.push('Citation Matrix');
+    var header = ['Meta-Analysis'].concat(d.studies).concat(['Total']);
+    lines.push(header.map(csvSafe).join(','));
+    for (var i = 0; i < d.r; i++) {
+      var row = [mas[i].name];
+      var rowSum = 0;
+      for (var j = 0; j < d.J; j++) {
+        row.push(d.C[i][j]);
+        rowSum += d.C[i][j];
+      }
+      row.push(rowSum);
+      lines.push(row.map(csvSafe).join(','));
+    }
+    // Frequency row
+    var freqRow = ['Frequency'];
+    d.studies.forEach(function(s) { freqRow.push(d.studyFreq[s]); });
+    freqRow.push(d.sumC);
+    lines.push(freqRow.map(csvSafe).join(','));
+
+    lines.push('');
+    lines.push('CCA,' + csvSafe((d.cca * 100).toFixed(1) + '%'));
+    lines.push('Interpretation,' + csvSafe(d.ccaInterp));
+    lines.push('');
+
+    // Pairwise
+    lines.push('Pairwise Overlap');
+    lines.push('MA 1,MA 2,Shared Studies,Union,Jaccard Index');
+    for (var a = 0; a < d.r; a++) {
+      for (var b = a + 1; b < d.r; b++) {
+        var pw = d.pairwise[a][b];
+        lines.push([csvSafe(mas[a].name), csvSafe(mas[b].name), pw.shared, pw.union, pw.jaccard.toFixed(4)].join(','));
+      }
+    }
+
+    downloadFile(lines.join('\n'), 'overlap-matrix-cca.csv', 'text/csv;charset=utf-8');
+  }
+
+  function exportJSON() {
+    var d = state.computed;
+    if (!d) return;
+    var mas = state.metaAnalyses;
+
+    var out = {
+      metaAnalyses: mas.map(function(ma) { return { name: ma.name, studies: ma.studies }; }),
+      uniqueStudies: d.studies,
+      citationMatrix: d.C,
+      cca: { value: parseFloat((d.cca * 100).toFixed(1)), interpretation: d.ccaInterp },
+      totalInclusions: d.sumC,
+      studyFrequency: d.studyFreq,
+      pairwiseOverlap: [],
+      nonOverlapPercent: parseFloat(d.nonOverlapPct.toFixed(1))
+    };
+
+    for (var i = 0; i < d.r; i++) {
+      for (var j = i + 1; j < d.r; j++) {
+        var pw = d.pairwise[i][j];
+        out.pairwiseOverlap.push({
+          ma1: mas[i].name,
+          ma2: mas[j].name,
+          shared: pw.shared,
+          union: pw.union,
+          jaccard: parseFloat(pw.jaccard.toFixed(4))
+        });
+      }
+    }
+
+    downloadFile(JSON.stringify(out, null, 2), 'overlap-matrix-cca.json', 'application/json');
+  }
+
+  function downloadFile(content, filename, mimeType) {
+    var blob = new Blob([content], { type: mimeType });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     EVENT WIRING
+     ═══════════════════════════════════════════════════════════ */
+
+  function init() {
+    initDarkMode();
+    initTabs();
+    loadState();
+    renderMaList();
+
+    // Add MA
+    document.getElementById('addMaBtn').addEventListener('click', function() {
+      var nameEl = document.getElementById('maNameInput');
+      var studiesEl = document.getElementById('maStudiesInput');
+      var name = nameEl.value.trim();
+      var studies = parseStudies(studiesEl.value);
+      if (!name) { nameEl.focus(); return; }
+      if (studies.length === 0) { studiesEl.focus(); return; }
+      addMA(name, studies);
+      nameEl.value = '';
+      studiesEl.value = '';
+      nameEl.focus();
+    });
+
+    // Enter key on study input triggers add
+    document.getElementById('maStudiesInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('addMaBtn').click();
+      }
+    });
+    document.getElementById('maNameInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('maStudiesInput').focus();
+      }
+    });
+
+    // CSV import
+    document.getElementById('importCsvBtn').addEventListener('click', function() {
+      var text = document.getElementById('csvPasteArea').value.trim();
+      if (!text) return;
+      var lines = text.split('\n');
+      var count = 0;
+      lines.forEach(function(line) {
+        line = line.trim();
+        if (!line) return;
+        var parts = line.split(',').map(function(s) { return s.trim().replace(/^["']|["']$/g, ''); });
+        if (parts.length < 2) return;
+        var name = parts[0];
+        var studies = parts.slice(1).filter(function(s) { return s.length > 0; });
+        if (name && studies.length > 0) {
+          state.metaAnalyses.push({ name: name, studies: studies });
+          count++;
+        }
+      });
+      if (count > 0) {
+        state.computed = null;
+        saveState();
+        renderMaList();
+        document.getElementById('csvPasteArea').value = '';
+      }
+    });
+
+    // Examples
+    document.getElementById('exampleDepression').addEventListener('click', function() {
+      state.metaAnalyses = JSON.parse(JSON.stringify(EXAMPLES.depression));
+      state.computed = null;
+      saveState();
+      renderMaList();
+      clearResults();
+    });
+    document.getElementById('exampleStatins').addEventListener('click', function() {
+      state.metaAnalyses = JSON.parse(JSON.stringify(EXAMPLES.statins));
+      state.computed = null;
+      saveState();
+      renderMaList();
+      clearResults();
+    });
+
+    // Compute
+    document.getElementById('computeBtn').addEventListener('click', function() {
+      computeAll();
+    });
+
+    // Clear all
+    document.getElementById('clearAllBtn').addEventListener('click', function() {
+      if (!confirm('Clear all data?')) return;
+      state.metaAnalyses = [];
+      state.computed = null;
+      saveState();
+      renderMaList();
+      clearResults();
+    });
+
+    // Exports
+    document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+    document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
+  }
+
+  /* ── Boot ────────────────────────────────────────────────── */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+</body>
+</html>
