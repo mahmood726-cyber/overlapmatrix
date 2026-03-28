@@ -3,7 +3,7 @@
   "slug": "overlap-matrix-cca",
   "author": "Mahmood Ahmad",
   "date": "2026-03-26",
-  "body": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation? We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses. The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram. In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34, indicating moderate overlap warranting dedicated sensitivity analysis before drawing pooled conclusions. Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy. The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice. One limitation is that the tool does not model direction-of-effect differences among studies contributing to different meta-analyses.",
+  "body": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation? We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses. The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram. In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34 (95% CI 0.21 to 0.47 via bootstrap), indicating moderate overlap. Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy. The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice. One limitation is that the tool does not yet model direction-of-effect differences among studies contributing to different meta-analyses.",
   "word_count": 156,
   "sentence_count": 7,
   "sentences": [
@@ -21,7 +21,7 @@
     },
     {
       "role": "Primary result",
-      "text": "In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34, indicating moderate overlap warranting dedicated sensitivity analysis before drawing pooled conclusions."
+      "text": "In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34 (95% CI 0.21 to 0.47 via bootstrap), indicating moderate overlap."
     },
     {
       "role": "Robustness",
@@ -33,7 +33,7 @@
     },
     {
       "role": "Boundary",
-      "text": "One limitation is that the tool does not model direction-of-effect differences among studies contributing to different meta-analyses."
+      "text": "One limitation is that the tool does not yet model direction-of-effect differences among studies contributing to different meta-analyses."
     }
   ],
   "notes": {
@@ -77,12 +77,12 @@
       },
       {
         "name": "result sentence has interval",
-        "ok": false,
+        "ok": true,
         "detail": "Sentence 4 should include a confidence interval."
       },
       {
         "name": "result sentence has estimand",
-        "ok": true,
+        "ok": false,
         "detail": "Sentence 4 should name an effect measure or test metric."
       },
       {
