@@ -1,0 +1,57 @@
+{
+  "title": "Overlap Matrix and Corrected Covered Area Calculator for Umbrella Reviews",
+  "slug": "overlap-matrix-cca",
+  "author": "Mahmood Ahmad",
+  "date": "2026-03-26",
+  "path": "C:\\Models\\OverlapMatrix",
+  "type": "methods",
+  "primary_estimand": "Corrected Covered Area (CCA)",
+  "summary": "A browser-based tool that computes the corrected covered area and pairwise overlap statistics for umbrella reviews.",
+  "body": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation? We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses. The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram. In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34, indicating moderate overlap warranting dedicated sensitivity analysis before drawing pooled conclusions. Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy. The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice. One limitation is that the tool does not model direction-of-effect differences among studies contributing to different meta-analyses.",
+  "sentences": [
+    {
+      "role": "Question",
+      "text": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation?"
+    },
+    {
+      "role": "Dataset",
+      "text": "We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses."
+    },
+    {
+      "role": "Method",
+      "text": "The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram."
+    },
+    {
+      "role": "Primary result",
+      "text": "In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34, indicating moderate overlap warranting dedicated sensitivity analysis before drawing pooled conclusions."
+    },
+    {
+      "role": "Robustness",
+      "text": "Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy."
+    },
+    {
+      "role": "Interpretation",
+      "text": "The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice."
+    },
+    {
+      "role": "Boundary",
+      "text": "One limitation is that the tool does not model direction-of-effect differences among studies contributing to different meta-analyses."
+    }
+  ],
+  "notes": {
+    "app": "Overlap Matrix / CCA Calculator v1.0",
+    "data": "User-supplied study lists per meta-analysis",
+    "code": "https://github.com/mahmood726-cyber/overlapmatrix",
+    "doi": "",
+    "version": "1.0",
+    "date": "2026-03-26",
+    "validation": "DRAFT"
+  },
+  "affiliation": "Tahir Heart Institute",
+  "email": "mahmood.ahmad2@nhs.net",
+  "references": [
+    "Borenstein M, Hedges LV, Higgins JPT, Rothstein HR. Introduction to Meta-Analysis. 2nd ed. Wiley; 2021.",
+    "Higgins JPT, Thompson SG, Deeks JJ, Altman DG. Measuring inconsistency in meta-analyses. BMJ. 2003;327(7414):557-560.",
+    "Cochrane Handbook for Systematic Reviews of Interventions. Version 6.4. Cochrane; 2023."
+  ]
+}

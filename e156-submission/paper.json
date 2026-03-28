@@ -1,0 +1,96 @@
+{
+  "title": "Overlap Matrix and Corrected Covered Area Calculator for Umbrella Reviews",
+  "slug": "overlap-matrix-cca",
+  "author": "Mahmood Ahmad",
+  "date": "2026-03-26",
+  "body": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation? We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses. The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram. In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34, indicating moderate overlap warranting dedicated sensitivity analysis before drawing pooled conclusions. Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy. The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice. One limitation is that the tool does not model direction-of-effect differences among studies contributing to different meta-analyses.",
+  "word_count": 156,
+  "sentence_count": 7,
+  "sentences": [
+    {
+      "role": "Question",
+      "text": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation?"
+    },
+    {
+      "role": "Dataset",
+      "text": "We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses."
+    },
+    {
+      "role": "Method",
+      "text": "The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram."
+    },
+    {
+      "role": "Primary result",
+      "text": "In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34, indicating moderate overlap warranting dedicated sensitivity analysis before drawing pooled conclusions."
+    },
+    {
+      "role": "Robustness",
+      "text": "Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy."
+    },
+    {
+      "role": "Interpretation",
+      "text": "The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice."
+    },
+    {
+      "role": "Boundary",
+      "text": "One limitation is that the tool does not model direction-of-effect differences among studies contributing to different meta-analyses."
+    }
+  ],
+  "notes": {
+    "app": "Overlap Matrix / CCA Calculator v1.0",
+    "data": "User-supplied study lists per meta-analysis",
+    "code": "https://github.com/mahmood726-cyber/overlapmatrix",
+    "doi": "",
+    "version": "1.0",
+    "date": "2026-03-26",
+    "validation": "DRAFT"
+  },
+  "type": "methods",
+  "primary_estimand": "Corrected Covered Area (CCA)",
+  "validation": {
+    "status": "fail",
+    "checks": [
+      {
+        "name": "single paragraph",
+        "ok": true,
+        "detail": "Body must not contain blank-line paragraph breaks."
+      },
+      {
+        "name": "sentence count",
+        "ok": true,
+        "detail": "Found 7 sentences."
+      },
+      {
+        "name": "word count",
+        "ok": true,
+        "detail": "Found 156 words."
+      },
+      {
+        "name": "no headings",
+        "ok": true,
+        "detail": "No markdown headings allowed in body."
+      },
+      {
+        "name": "no links",
+        "ok": true,
+        "detail": "No links or DOI links allowed in body."
+      },
+      {
+        "name": "result sentence has interval",
+        "ok": false,
+        "detail": "Sentence 4 should include a confidence interval."
+      },
+      {
+        "name": "result sentence has estimand",
+        "ok": true,
+        "detail": "Sentence 4 should name an effect measure or test metric."
+      },
+      {
+        "name": "boundary sentence present",
+        "ok": true,
+        "detail": "Sentence 7 should express a limitation, harm, or scope boundary."
+      }
+    ]
+  },
+  "schema": "e156-v0.2"
+}
