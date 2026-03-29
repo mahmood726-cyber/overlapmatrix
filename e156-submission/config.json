@@ -3,11 +3,11 @@
   "slug": "overlap-matrix-cca",
   "author": "Mahmood Ahmad",
   "date": "2026-03-26",
-  "path": "C:\\Models\\OverlapMatrix",
+  "path": "/mnt/c/Models/OverlapMatrix",
   "type": "methods",
   "primary_estimand": "Corrected Covered Area (CCA)",
   "summary": "A browser-based tool that computes the corrected covered area and pairwise overlap statistics for umbrella reviews.",
-  "body": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation? We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses. The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram. In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34 (95% CI 0.21 to 0.47 via bootstrap), indicating moderate overlap. Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy. The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice. One limitation is that the tool does not yet model direction-of-effect differences among studies contributing to different meta-analyses.",
+  "body": "How can reviewers conducting umbrella reviews systematically quantify primary-study overlap across included meta-analyses without manual cross-tabulation? We implemented the Pieper corrected covered area method in a single-file browser application that accepts study lists for any number of included meta-analyses. The tool constructs a binary citation matrix, computes the corrected covered area index, generates pairwise Jaccard coefficients, and renders an interactive color-coded heatmap with hierarchical clustering and a downloadable dendrogram. In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area proportion was 0.34 (95% CI 0.21 to 0.47 via bootstrap), indicating moderate overlap. Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one dominant review drove most observed redundancy. The calculator enables transparent reporting of overlap in umbrella reviews, directly supporting the PRIOR guidelines for handling overlapping evidence in practice. One limitation is that the tool does not yet model direction-of-effect differences among studies contributing to different meta-analyses.",
   "sentences": [
     {
       "role": "Question",
@@ -23,11 +23,11 @@
     },
     {
       "role": "Primary result",
-      "text": "In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area was 0.34 (95% CI 0.21 to 0.47 via bootstrap), indicating moderate overlap."
+      "text": "In a demonstration dataset of 8 meta-analyses sharing 47 primary studies, the corrected covered area proportion was 0.34 (95% CI 0.21 to 0.47 via bootstrap), indicating moderate overlap."
     },
     {
       "role": "Robustness",
-      "text": "Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one single dominant review drove most observed redundancy."
+      "text": "Leave-one-out removal of the most-cited meta-analysis reduced the index to 0.21, confirming that one dominant review drove most observed redundancy."
     },
     {
       "role": "Interpretation",
