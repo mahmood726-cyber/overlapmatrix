@@ -352,9 +352,12 @@ body.dark .alert--warn { background: #451a03; color: #fcd34d; border-color: #924
 .gap-2 { gap: var(--space-2); }
 .gap-3 { gap: var(--space-3); }
 .hidden { display: none !important; }
+.skip-nav { position: absolute; left: -9999px; top: auto; }
+.skip-nav:focus { position: fixed; left: 0; top: 0; z-index: 999; padding: 8px 16px; background: var(--accent); color: #fff; text-decoration: none; border-radius: 0 0 8px 0; font-size: var(--text-sm); }
 </style>
 </head>
 <body>
+<a href="#app-main" class="skip-nav">Skip to content</a>
 
 <!-- ── Header ──────────────────────────────────────────────── -->
 <header class="app-header">
@@ -368,7 +371,7 @@ body.dark .alert--warn { background: #451a03; color: #fcd34d; border-color: #924
   </div>
 </header>
 
-<main class="app-main">
+<main class="app-main" id="app-main">
   <!-- ── Tab navigation ─────────────────────────────────────── -->
   <div class="tab-list" role="tablist" aria-label="OverlapMatrix sections">
     <button class="tab-btn" role="tab" aria-selected="true" aria-controls="tab-data" id="tab-btn-data">
@@ -717,6 +720,8 @@ function escHtml(s) {
 
 function csvCell(v) {
   var s = String(v);
+  // Guard against CSV formula injection (but NOT leading minus for negative numbers)
+  if (/^[=+@\t\r]/.test(s)) s = "'" + s;
   if (/[,"\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
   return s;
 }
